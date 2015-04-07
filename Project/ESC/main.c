@@ -189,7 +189,7 @@ int main(void)
 		if(SYS_CNT>=SYS_LOOP)
 		{
 
-			Status = engcommand(4);
+			Status =  engcommand(4);
 			if(Status==0)
 			{
 				SYS_MODE = MODE_THROCUT;
