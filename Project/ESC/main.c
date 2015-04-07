@@ -204,7 +204,7 @@ int main(void)
                 SYS_MODE = MODE_RC;
 
 			}
-			else
+			else if(Status==1)
 			{
 				SYS_MODE = MODE_MCU;
 
@@ -495,6 +495,7 @@ int main(void)
 				//RC Mode
 				if(SYS_MODE==MODE_RC)
 				{
+					Status = 3;
 					if(rc_pwm>ServoEndPointHigh)
 						ThrottlePwm = ServoEndPointHigh;
 					else if (rc_pwm<ServoEndPointLow)
@@ -505,6 +506,7 @@ int main(void)
 				//MCU Mode
 				else if(SYS_MODE==MODE_MCU)
 				{
+					Status = 1;
 					if(ThrottlePwm>ServoEndPointHigh)
 						ThrottlePwm = ServoEndPointHigh;
 					else if (ThrottlePwm<ServoEndPointLow)
@@ -514,6 +516,7 @@ int main(void)
 
 				else if(SYS_MODE==MODE_THROCUT)
 				{
+					Status = 0;
 					while(1)
 				  {
 					if(SYS_CNT>=SYS_LOOP)
@@ -595,6 +598,8 @@ int main(void)
 				//RPM Control Mode
 				else
 				{
+					Status = 2;
+
 					//Arrange calculation parameters
 					Kp_f = 0.0001*Kp;
 					Ki_f = 0.0001*Ki;
