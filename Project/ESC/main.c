@@ -186,30 +186,30 @@ int main(void)
 	while (1) 
 	{
 
-		if(SYS_CNT>=SYS_LOOP)
-		{
+		// if(SYS_CNT>=SYS_LOOP)
+		// {
 
-			Status = engcommand(4);
-			if(Status==0)
-			{
-				SYS_MODE = MODE_THROCUT;
-			}
-			else if(Status==2)
-			{
-                SYS_MODE = MODE_RPMCTRL;
+		// 	Status = engcommand(4);
+		// 	if(Status==0)
+		// 	{
+		// 		SYS_MODE = MODE_THROCUT;
+		// 	}
+		// 	else if(Status==2)
+		// 	{
+  //               SYS_MODE = MODE_RPMCTRL;
 
-			}	
-			else if(Status==3)
-			{
-                SYS_MODE = MODE_RC;
+		// 	}	
+		// 	else if(Status==3)
+		// 	{
+  //               SYS_MODE = MODE_RC;
 
-			}
-			else
-			{
-				SYS_MODE = MODE_MCU;
+		// 	}
+		// 	else
+		// 	{
+		// 		SYS_MODE = MODE_MCU;
 
 
-			}	
+		// 	}	
             
 					//my_printf("\r\n22222");	
 			//Reset loop1 status
