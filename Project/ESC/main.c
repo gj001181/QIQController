@@ -321,6 +321,7 @@ int main(void)
 
 					case CMD_MODETHROCUT: 
 							SYS_MODE = MODE_THROCUT;
+							Status = 0;
 							my_printf("\r\nSystem Mode: CUT Mode");
 							ThrottlePwm = ServoEndPointHigh;
 
@@ -332,6 +333,7 @@ int main(void)
 					case CMD_MODERC:  
 							//change system mode into RC Mode
 							SYS_MODE = MODE_RC;
+							Status = 3;
 							//echo for confirm
 							my_printf("\r\nSystem Mode: RC Mode");
 							//set throttle into idle
@@ -357,7 +359,8 @@ int main(void)
 
 					case CMD_MODEMCU:  
 							//change system mode into MCU Mode
-							SYS_MODE = MODE_MCU;	
+							SYS_MODE = MODE_MCU;
+							Status = 1;	
 							//echo for confirm
 							my_printf("\r\nSystem Mode: MCU Mode");	
 							//set throttle into idle
@@ -368,6 +371,7 @@ int main(void)
 					case CMD_MODERPMCTRL:
 							//change system mode into RPM Control Mode
 							SYS_MODE = MODE_RPMCTRL;
+							Status = 2;
 							//echo for confirm
 							my_printf("\r\nSystem Mode: RPM Control Mode");	
 							//
@@ -495,7 +499,6 @@ int main(void)
 				//RC Mode
 				if(SYS_MODE==MODE_RC)
 				{
-					Status = 3;
 					if(rc_pwm>ServoEndPointHigh)
 						ThrottlePwm = ServoEndPointHigh;
 					else if (rc_pwm<ServoEndPointLow)
@@ -506,7 +509,6 @@ int main(void)
 				//MCU Mode
 				else if(SYS_MODE==MODE_MCU)
 				{
-					Status = 1;
 					if(ThrottlePwm>ServoEndPointHigh)
 						ThrottlePwm = ServoEndPointHigh;
 					else if (ThrottlePwm<ServoEndPointLow)
@@ -516,7 +518,6 @@ int main(void)
 
 				else if(SYS_MODE==MODE_THROCUT)
 				{
-					Status = 0;
 					while(1)
 				  {
 					if(SYS_CNT>=SYS_LOOP)
@@ -544,6 +545,7 @@ int main(void)
 				      }
 				   }   
                     SYS_MODE = MODE_MCU;
+                    Status = 1;
                     my_printf("\r\nSystem Mode: MCU Mode");	
                     ThrottlePwm = ServoIdlePoint;
 					Throttle_Output(ThrottlePwm);
@@ -598,9 +600,8 @@ int main(void)
 				//RPM Control Mode
 				else
 				{
-					Status = 2;
-
-					//Arrange calculation parameters
+				
+					//Arrange calculation 
 					Kp_f = 0.0001*Kp;
 					Ki_f = 0.0001*Ki;
 					Kd_f = 0.001*Kd;
