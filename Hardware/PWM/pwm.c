@@ -96,7 +96,7 @@ void PWM_Init(u16 arr, u16 psc)
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOB, ENABLE);  //使能GPIO時鐘
 	//RPM Input
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;  //PB6, TIM4_CH1 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 	//Throttle Input(Master_PWM_IN)

@@ -19,23 +19,7 @@
 #include "24cxx.h"
 #include "ChiAhsuN_F1.h"
 
-void Delay(vu32 nCount);
-void Delaynus(vu32 nus);
 
-void Delay(vu32 nCount)
-{
-         for(; nCount != 0; nCount--);
-}
-
-
-void Delaynus(vu32 nus)
-{
-        u8 nCount ;
-        while(nus--)
-        {
-                for(nCount = 6 ; nCount != 0; nCount--);
-        }
-}
 
 
 
@@ -189,27 +173,27 @@ int main(void)
 		if(SYS_CNT>=SYS_LOOP)
 		{
 
-			Status = engcommand(4);
-			if(Status==0)
-			{
-				SYS_MODE = MODE_THROCUT;
-			}
-			else if(Status==2)
-			{
-                SYS_MODE = MODE_RPMCTRL;
+			// Status = engcommand(4);
+			// if(Status==0)
+			// {
+			// 	SYS_MODE = MODE_THROCUT;
+			// }
+			// else if(Status==2)
+			// {
+   //              SYS_MODE = MODE_RPMCTRL;
 
-			}	
-			else if(Status==3)
-			{
-                SYS_MODE = MODE_RC;
+			// }	
+			// else if(Status==3)
+			// {
+   //              SYS_MODE = MODE_RC;
 
-			}
-			else if(Status==1)
-			{
-				SYS_MODE = MODE_MCU;
+			// }
+			// else if(Status==1)
+			// {
+			// 	SYS_MODE = MODE_MCU;
 
 
-			}	
+			// }	
             
 					//my_printf("\r\n22222");	
 			//Reset loop1 status
@@ -321,7 +305,7 @@ int main(void)
 
 					case CMD_MODETHROCUT: 
 							SYS_MODE = MODE_THROCUT;
-							Status = 0;
+							// Status = 0;
 							my_printf("\r\nSystem Mode: CUT Mode");
 							ThrottlePwm = ServoEndPointHigh;
 
@@ -333,7 +317,7 @@ int main(void)
 					case CMD_MODERC:  
 							//change system mode into RC Mode
 							SYS_MODE = MODE_RC;
-							Status = 3;
+							// Status = 3;
 							//echo for confirm
 							my_printf("\r\nSystem Mode: RC Mode");
 							//set throttle into idle
@@ -360,7 +344,7 @@ int main(void)
 					case CMD_MODEMCU:  
 							//change system mode into MCU Mode
 							SYS_MODE = MODE_MCU;
-							Status = 1;	
+							// Status = 1;	
 							//echo for confirm
 							my_printf("\r\nSystem Mode: MCU Mode");	
 							//set throttle into idle
@@ -371,7 +355,7 @@ int main(void)
 					case CMD_MODERPMCTRL:
 							//change system mode into RPM Control Mode
 							SYS_MODE = MODE_RPMCTRL;
-							Status = 2;
+							// Status = 2;
 							//echo for confirm
 							my_printf("\r\nSystem Mode: RPM Control Mode");	
 							//
@@ -545,7 +529,7 @@ int main(void)
 				      }
 				   }   
                     SYS_MODE = MODE_MCU;
-                    Status = 1;
+                    // Status = 1;
                     my_printf("\r\nSystem Mode: MCU Mode");	
                     ThrottlePwm = ServoIdlePoint;
 					Throttle_Output(ThrottlePwm);
