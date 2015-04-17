@@ -57,8 +57,10 @@ typedef enum ChiaHsun_CAN_ENGINE_CONTROLLER_MSG
 	CAN_ID_KP,
 	CAN_ID_KI,
 	CAN_ID_KD,
-	CAN_ID_Ax,
-	CAN_ID_B,
+	CAN_ID_A1x,
+	CAN_ID_B1,
+        CAN_ID_A2x,
+	CAN_ID_B2,
 	//Engine Data
 	CAN_ID_ENGINE_TRANSDATA,
 	CAN_ID_ENGINE_RPM,

@@ -90,6 +90,10 @@ int Err_Now = 0;			   //RPM error at t
 int Err_Det = 0;			   //RPM error difference at t
 int Err_Sum = 0;			   //RPM error integral
 uint16_t Timer = 0; 
+uint16_t b1 = 1800;
+uint16_t b2 = 1600;
+float a1 = 10000.0f;
+float a2 = 10000.0f;
 
 uint8_t SerialDataAnalysis(void);
 uint8_t CMD_Analysis(char* cmd_buf, uint16_t* cmdvalue);
@@ -166,6 +170,8 @@ int main(void)
 	my_printf("\r\nCurrent RC Imput PWM DutyCycle:%d",rc_pwm);
 	my_printf("\r\nCurrent Throttle Output DutyCycle:%d",ThrottlePwm);
 	my_printf("\r\nKp:%d, ki:%d, kd:%d",Kp,Ki,Kd);
+	my_printf("\r\nSET1=%d-%dx",b1,(uint16_t)a1);
+	my_printf("\r\nSET2=%d-%dx",b2,(uint16_t)a2);
 	my_printf("\r\n=============================================");	
 	while (1) 
 	{
@@ -431,6 +437,8 @@ int main(void)
 							my_printf("\r\nCurrent RC Imput PWM DutyCycle:%d",rc_pwm);
 							my_printf("\r\nCurrent Throttle Output DutyCycle:%d",ThrottlePwm);
 							my_printf("\r\nKp:%d, ki:%d, kd:%d",Kp,Ki,Kd);
+							my_printf("\r\nSET1=%d-%dx",b1,(uint16_t)a1);
+	                        my_printf("\r\nSET2=%d-%dx",b2,(uint16_t)a2);
 							my_printf("\r\n=============================================");				
 					break;
 
@@ -541,11 +549,51 @@ int main(void)
 				else if(SYS_MODE==MODE_MCU)
 				{
 					Status = 1;
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_A1x]==1)
+					{
+                      a1 = enginedata_array[THIS_ENGINE_ID][CAN_ID_A1x];
+                      my_printf("\r\na1=%d",(uint16_t)a1);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_A1x);
+
+					}
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_B1]==1)
+					{
+                      b1 = enginedata_array[THIS_ENGINE_ID][CAN_ID_B1];
+                      my_printf("\r\nb1=%d",b1);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_B1);
+
+					}
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_A2x]==1)
+					{
+                      a2 = enginedata_array[THIS_ENGINE_ID][CAN_ID_A2x];
+                      my_printf("\r\na2=%d",(uint16_t)a2);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_A2x);
+
+					}
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_B2]==1)
+					{
+                      b2 = enginedata_array[THIS_ENGINE_ID][CAN_ID_B2];
+                      my_printf("\r\nb2=%d",b2);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_B2);
+
+					}
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_KP]==1)
+					{
+                      Kp = enginedata_array[THIS_ENGINE_ID][CAN_ID_KP];
+                      my_printf("\r\nkp=%d",Kp);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_KP);
+
+					}
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_KD]==1)
+					{
+                      Kd = enginedata_array[THIS_ENGINE_ID][CAN_ID_KD];
+                      my_printf("\r\nkd=%d",Kd);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_KD);
+
+					}
 					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_LOW_POINT]==1)
 					{
                       ServoEndPointLow = enginedata_array[THIS_ENGINE_ID][CAN_ID_LOW_POINT];
-                      my_printf("\r\n%d",ServoEndPointLow);
-                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_LOW_POINT);
                       if(ServoEndPointLow>1500)
                       {
                       	ServoEndPointLow = 1500;
@@ -554,14 +602,15 @@ int main(void)
                       {
                       	ServoEndPointLow = 1380;
                       }	
+                      my_printf("\r\nendl=%d",ServoEndPointLow);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_LOW_POINT);
+                      
 
 					}
 
                     if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_HIGH_POINT]==1)
 					{
                       ServoEndPointHigh = enginedata_array[THIS_ENGINE_ID][CAN_ID_HIGH_POINT];
-                      my_printf("\r\n%d",ServoEndPointHigh);
-                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_HIGH_POINT);
                       if(ServoEndPointHigh>1980)
                       {
                       	ServoEndPointHigh = 1980;
@@ -570,6 +619,9 @@ int main(void)
                       {
                       	ServoEndPointHigh = 1800;
                       }	
+                      my_printf("\r\nendh=%d",ServoEndPointHigh);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_HIGH_POINT);
+                      
 
 
 					}
@@ -577,7 +629,7 @@ int main(void)
 					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_MCU_PWM]==1)
 					{
                       ThrottlePwm = enginedata_array[THIS_ENGINE_ID][CAN_ID_MCU_PWM];
-                      my_printf("\r\n%d",ThrottlePwm);
+                      my_printf("\r\nmcupoint=%d",ThrottlePwm);
                       enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_MCU_PWM);
 
 					}
@@ -585,6 +637,7 @@ int main(void)
 					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_IDLE_POINT]==1)
 					{
                       ServoIdlePoint = enginedata_array[THIS_ENGINE_ID][CAN_ID_IDLE_POINT];
+                      my_printf("\r\nidle=%d",ThrottlePwm);
                       enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_IDLE_POINT);
 
 					}	
@@ -628,26 +681,13 @@ int main(void)
 				   }   
                     SYS_MODE = MODE_MCU;
                     
-                    my_printf("\r\nSystem Mode: MCU Mode");	
-                    if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_MCU_PWM]==1)
-					{
-                      ThrottlePwm = enginedata_array[THIS_ENGINE_ID][CAN_ID_MCU_PWM];
-                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_MCU_PWM);
-
-					}
-
-					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_IDLE_POINT]==1)
-					{
-                      ServoIdlePoint = enginedata_array[THIS_ENGINE_ID][CAN_ID_IDLE_POINT];
-                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_IDLE_POINT);
-
-					}	
-
+                    my_printf("\r\nSystem Mode: MCU Mode");
+                    ThrottlePwm = ServoIdlePoint;	
 					if(ThrottlePwm>ServoEndPointHigh)
 						ThrottlePwm = ServoEndPointHigh;
 					else if (ThrottlePwm<ServoEndPointLow)
 						ThrottlePwm = ServoEndPointLow;
-					ThrottlePwm = ServoIdlePoint;
+					
 					Throttle_Output(ThrottlePwm);
 				}
 
@@ -1194,12 +1234,12 @@ uint16_t ServoLinear(int16_t throttle_percentage)
 	if((throttle_percentage>=1)&&(throttle_percentage<672)) //section 1
 	{
 		det_x = throttle_percentage -  SECTION1_STA;
-		mapped_y = 1862 - 0.2039*det_x;
+		mapped_y = (uint16_t)((float)b1 - ((float)a1/10000.0f)*(float)det_x);
 	}
 	else if((throttle_percentage>=672)&&(throttle_percentage<1000))	//section 2
 	{
 		det_x = throttle_percentage -  SECTION2_STA;
-		mapped_y = 1725 - 0.5640*det_x;
+		mapped_y = (uint16_t)((float)b1 - ((float)a1/10000.0f)*(float)det_x);
 	}
 	// else if((throttle_percentage>=490)&&(throttle_percentage<=1000))//section 3
 	// {
