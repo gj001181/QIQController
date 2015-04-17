@@ -19,7 +19,7 @@
 #include "24cxx.h"
 #include "ChiAhsuN_F1.h"
 
-
+#define THIS_ENGINE_ID CAN_ID_ENGINE_2
 
 
 
@@ -63,7 +63,7 @@
 #define THROTTLE_CMD_H  1930
 #define THROTTLE_CMD_L	1107
 #define THROTTLE_FULL_RANGE	(THROTTLE_CMD_H-THROTTLE_CMD_L)
-
+uint8_t counter = 0;
 uint8_t Status = 1;
 uint8_t LogEnable = 0; 			   //1=enable, 0=disable
 uint8_t SYS_MODE = MODE_MCU; 	   //system mode
@@ -172,11 +172,57 @@ int main(void)
 
 		if(SYS_CNT>=SYS_LOOP)
 		{
+			check_ground_command(THIS_ENGINE_ID);
+            SYS_CNT = 0;
+            counter = counter + 1; //canbus counter
 
+            if(counter==10) // 5hz
+            {	
+              engine_transdata(THIS_ENGINE_ID,engine_rpm,ThrottlePwm,0,Engine_Temperature,Throttle_percent);
+              counter = 0;
+            } 
+
+
+            if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_ENGINE_CONTROLLER_MODE]==1)
+             {
+
+                 Status = enginedata_array[THIS_ENGINE_ID][CAN_ID_ENGINE_CONTROLLER_MODE];
+                 enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_ENGINE_CONTROLLER_MODE);
+                 if(Status==0)
+			{
+				SYS_MODE = MODE_THROCUT;
+				Status = 1;
+			}
+			else if(Status==2)
+			{
+                SYS_MODE = MODE_RPMCTRL;
+
+			}	
+			else if(Status==3)
+			{
+                SYS_MODE = MODE_RC;
+
+			}
+			else if(Status==1)
+			{
+				SYS_MODE = MODE_MCU;
+				}
+
+
+
+
+
+
+
+
+
+             }
+            	
 			// Status = engcommand(4);
 			// if(Status==0)
 			// {
 			// 	SYS_MODE = MODE_THROCUT;
+			// 	Status = 1;
 			// }
 			// else if(Status==2)
 			// {
@@ -197,7 +243,7 @@ int main(void)
             
 					//my_printf("\r\n22222");	
 			//Reset loop1 status
-			SYS_CNT = 0;
+			
 			//Check if MCU get CMD
 			if((USART2_RX_STA>>15)==1) 
 			{
@@ -305,7 +351,7 @@ int main(void)
 
 					case CMD_MODETHROCUT: 
 							SYS_MODE = MODE_THROCUT;
-							// Status = 0;
+							
 							my_printf("\r\nSystem Mode: CUT Mode");
 							ThrottlePwm = ServoEndPointHigh;
 
@@ -317,7 +363,7 @@ int main(void)
 					case CMD_MODERC:  
 							//change system mode into RC Mode
 							SYS_MODE = MODE_RC;
-							// Status = 3;
+							
 							//echo for confirm
 							my_printf("\r\nSystem Mode: RC Mode");
 							//set throttle into idle
@@ -344,7 +390,7 @@ int main(void)
 					case CMD_MODEMCU:  
 							//change system mode into MCU Mode
 							SYS_MODE = MODE_MCU;
-							// Status = 1;	
+							
 							//echo for confirm
 							my_printf("\r\nSystem Mode: MCU Mode");	
 							//set throttle into idle
@@ -355,7 +401,7 @@ int main(void)
 					case CMD_MODERPMCTRL:
 							//change system mode into RPM Control Mode
 							SYS_MODE = MODE_RPMCTRL;
-							// Status = 2;
+							
 							//echo for confirm
 							my_printf("\r\nSystem Mode: RPM Control Mode");	
 							//
@@ -483,6 +529,7 @@ int main(void)
 				//RC Mode
 				if(SYS_MODE==MODE_RC)
 				{
+					Status = 3;
 					if(rc_pwm>ServoEndPointHigh)
 						ThrottlePwm = ServoEndPointHigh;
 					else if (rc_pwm<ServoEndPointLow)
@@ -493,11 +540,61 @@ int main(void)
 				//MCU Mode
 				else if(SYS_MODE==MODE_MCU)
 				{
+					Status = 1;
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_LOW_POINT]==1)
+					{
+                      ServoEndPointLow = enginedata_array[THIS_ENGINE_ID][CAN_ID_LOW_POINT];
+                      my_printf("\r\n%d",ServoEndPointLow);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_LOW_POINT);
+                      if(ServoEndPointLow>1500)
+                      {
+                      	ServoEndPointLow = 1500;
+                      }
+                      if(ServoEndPointLow<1380)
+                      {
+                      	ServoEndPointLow = 1380;
+                      }	
+
+					}
+
+                    if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_HIGH_POINT]==1)
+					{
+                      ServoEndPointHigh = enginedata_array[THIS_ENGINE_ID][CAN_ID_HIGH_POINT];
+                      my_printf("\r\n%d",ServoEndPointHigh);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_HIGH_POINT);
+                      if(ServoEndPointHigh>1980)
+                      {
+                      	ServoEndPointHigh = 1980;
+                      }
+                      if(ServoEndPointHigh<1800)
+                      {
+                      	ServoEndPointHigh = 1800;
+                      }	
+
+
+					}
+
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_MCU_PWM]==1)
+					{
+                      ThrottlePwm = enginedata_array[THIS_ENGINE_ID][CAN_ID_MCU_PWM];
+                      my_printf("\r\n%d",ThrottlePwm);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_MCU_PWM);
+
+					}
+
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_IDLE_POINT]==1)
+					{
+                      ServoIdlePoint = enginedata_array[THIS_ENGINE_ID][CAN_ID_IDLE_POINT];
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_IDLE_POINT);
+
+					}	
+
 					if(ThrottlePwm>ServoEndPointHigh)
 						ThrottlePwm = ServoEndPointHigh;
 					else if (ThrottlePwm<ServoEndPointLow)
 						ThrottlePwm = ServoEndPointLow;
 					Throttle_Output(ThrottlePwm);
+
 				}
 
 				else if(SYS_MODE==MODE_THROCUT)
@@ -506,6 +603,7 @@ int main(void)
 				  {
 					if(SYS_CNT>=SYS_LOOP)
 					  {	
+					  	
 						SYS_CNT = 0;
                         Timer = Timer + 1;
 					    if(ThrottlePwm>ServoEndPointHigh)
@@ -529,9 +627,27 @@ int main(void)
 				      }
 				   }   
                     SYS_MODE = MODE_MCU;
-                    // Status = 1;
+                    
                     my_printf("\r\nSystem Mode: MCU Mode");	
-                    ThrottlePwm = ServoIdlePoint;
+                    if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_MCU_PWM]==1)
+					{
+                      ThrottlePwm = enginedata_array[THIS_ENGINE_ID][CAN_ID_MCU_PWM];
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_MCU_PWM);
+
+					}
+
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_IDLE_POINT]==1)
+					{
+                      ServoIdlePoint = enginedata_array[THIS_ENGINE_ID][CAN_ID_IDLE_POINT];
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_IDLE_POINT);
+
+					}	
+
+					if(ThrottlePwm>ServoEndPointHigh)
+						ThrottlePwm = ServoEndPointHigh;
+					else if (ThrottlePwm<ServoEndPointLow)
+						ThrottlePwm = ServoEndPointLow;
+					ThrottlePwm = ServoIdlePoint;
 					Throttle_Output(ThrottlePwm);
 				}
 
@@ -584,7 +700,7 @@ int main(void)
 				//RPM Control Mode
 				else
 				{
-				
+				    
 					//Arrange calculation 
 					Kp_f = 0.0001*Kp;
 					Ki_f = 0.0001*Ki;
@@ -604,8 +720,8 @@ int main(void)
 					ThrottlePwmTempt = ServoLinear(Throttle_percent);
 					my_printf("\r\n%d,%d,%d,%d,%d,%d,%d",TargetRPM,engine_rpm,ThrottlePwmTempt,Throttle_percent,Kp,Kd);
 					//Limiter
-					if(ThrottlePwmTempt>ServoIdlePoint)
-						ThrottlePwm = ServoIdlePoint;
+					if(ThrottlePwmTempt>ServoEndPointHigh)
+						ThrottlePwm = ServoEndPointHigh;
 					else if (ThrottlePwmTempt<ServoEndPointLow)
 						ThrottlePwm = ServoEndPointLow;
 					else
@@ -1061,9 +1177,9 @@ uint8_t GetTargetRPM(char* cmd_buf, uint16_t* var_rpm)
 //throttle_percentage: desired throttle percentage, 1000 = 100%
 //return : linearized PWM output
 #define SECTION1_STA	1
-#define SECTION1_END	855
+#define SECTION1_END	672
 
-#define SECTION2_STA	855
+#define SECTION2_STA	672
 #define SECTION2_END	1000
 
 
@@ -1075,15 +1191,15 @@ uint16_t ServoLinear(int16_t throttle_percentage)
 	if(throttle_percentage>=1000)	throttle_percentage = 1000;	//Full throttle RPM=7600
 	if(throttle_percentage<=1)		throttle_percentage = 1;	//idle RPM=3500
 
-	if((throttle_percentage>=1)&&(throttle_percentage<855)) //section 1
+	if((throttle_percentage>=1)&&(throttle_percentage<672)) //section 1
 	{
 		det_x = throttle_percentage -  SECTION1_STA;
-		mapped_y = 1845 - 0.2748*det_x;
+		mapped_y = 1862 - 0.2039*det_x;
 	}
-	else if((throttle_percentage>=855)&&(throttle_percentage<1000))	//section 2
+	else if((throttle_percentage>=672)&&(throttle_percentage<1000))	//section 2
 	{
 		det_x = throttle_percentage -  SECTION2_STA;
-		mapped_y = 1610 - 0.8275*det_x;
+		mapped_y = 1725 - 0.5640*det_x;
 	}
 	// else if((throttle_percentage>=490)&&(throttle_percentage<=1000))//section 3
 	// {
