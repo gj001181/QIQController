@@ -19,7 +19,7 @@
 #include "24cxx.h"
 #include "ChiAhsuN_F1.h"
 
-#define THIS_ENGINE_ID CAN_ID_ENGINE_2
+#define THIS_ENGINE_ID CAN_ID_ENGINE_4
 
 
 
@@ -90,9 +90,9 @@ int Err_Now = 0;			   //RPM error at t
 int Err_Det = 0;			   //RPM error difference at t
 int Err_Sum = 0;			   //RPM error integral
 uint16_t Timer = 0; 
-uint16_t b1 = 1800;
+uint16_t b1 = 1850;
 uint16_t b2 = 1600;
-float a1 = 10000.0f;
+float a1 = 5000.0f;
 float a2 = 10000.0f;
 
 uint8_t SerialDataAnalysis(void);
@@ -577,20 +577,7 @@ int main(void)
                       enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_B2);
 
 					}
-					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_KP]==1)
-					{
-                      Kp = enginedata_array[THIS_ENGINE_ID][CAN_ID_KP];
-                      my_printf("\r\nkp=%d",Kp);
-                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_KP);
-
-					}
-					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_KD]==1)
-					{
-                      Kd = enginedata_array[THIS_ENGINE_ID][CAN_ID_KD];
-                      my_printf("\r\nkd=%d",Kd);
-                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_KD);
-
-					}
+					
 					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_LOW_POINT]==1)
 					{
                       ServoEndPointLow = enginedata_array[THIS_ENGINE_ID][CAN_ID_LOW_POINT];
@@ -740,7 +727,20 @@ int main(void)
 				//RPM Control Mode
 				else
 				{
-				    
+				    if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_KP]==1)
+					{
+                      Kp = enginedata_array[THIS_ENGINE_ID][CAN_ID_KP];
+                      my_printf("\r\nkp=%d",Kp);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_KP);
+
+					}
+					if(enginedata_flag[THIS_ENGINE_ID][CAN_ID_KD]==1)
+					{
+                      Kd = enginedata_array[THIS_ENGINE_ID][CAN_ID_KD];
+                      my_printf("\r\nkd=%d",Kd);
+                      enginedata_flag_reset(THIS_ENGINE_ID,CAN_ID_KD);
+
+					}
 					//Arrange calculation 
 					Kp_f = 0.0001*Kp;
 					Ki_f = 0.0001*Ki;
@@ -1217,9 +1217,9 @@ uint8_t GetTargetRPM(char* cmd_buf, uint16_t* var_rpm)
 //throttle_percentage: desired throttle percentage, 1000 = 100%
 //return : linearized PWM output
 #define SECTION1_STA	1
-#define SECTION1_END	672
+#define SECTION1_END	650
 
-#define SECTION2_STA	672
+#define SECTION2_STA	650
 #define SECTION2_END	1000
 
 
@@ -1231,15 +1231,15 @@ uint16_t ServoLinear(int16_t throttle_percentage)
 	if(throttle_percentage>=1000)	throttle_percentage = 1000;	//Full throttle RPM=7600
 	if(throttle_percentage<=1)		throttle_percentage = 1;	//idle RPM=3500
 
-	if((throttle_percentage>=1)&&(throttle_percentage<672)) //section 1
+	if((throttle_percentage>=1)&&(throttle_percentage<650)) //section 1
 	{
 		det_x = throttle_percentage -  SECTION1_STA;
 		mapped_y = (uint16_t)((float)b1 - ((float)a1/10000.0f)*(float)det_x);
 	}
-	else if((throttle_percentage>=672)&&(throttle_percentage<1000))	//section 2
+	else if((throttle_percentage>=650)&&(throttle_percentage<=1000))	//section 2
 	{
 		det_x = throttle_percentage -  SECTION2_STA;
-		mapped_y = (uint16_t)((float)b1 - ((float)a1/10000.0f)*(float)det_x);
+		mapped_y = (uint16_t)((float)b2 - ((float)a2/10000.0f)*(float)det_x);
 	}
 	// else if((throttle_percentage>=490)&&(throttle_percentage<=1000))//section 3
 	// {
